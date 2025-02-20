@@ -155,7 +155,7 @@ class AUTOENCODER(nn.Module):
 model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons).to(device)
 
 # Training loop variables
-eps = 2         # Number of epochs per batch size
+eps = 800         # Number of epochs per batch size
 lr = 1e-4         # Learning rate
 batch_size = 256
 S_p = 30
