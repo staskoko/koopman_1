@@ -156,7 +156,7 @@ model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons).to(device)
 
 # Training loop variables
 eps = 800         # Number of epochs per batch size
-lr = 1e-4         # Learning rate
+lr = 1e-3         # Learning rate
 batch_size = 256
 S_p = 30
 T = len(train_tensor[0, :, :])
@@ -228,36 +228,36 @@ def predict_trajectory_full(initial_condition, steps, model):
     trajectory = torch.cat(predictions, dim=0)
     return trajectory
 
-
-# Example usage:
-sample_index = r.randint(0, 4999) # choose the sample index
-actual_traj = test_tensor[sample_index]  # shape: [101, 2]
-initial_condition = actual_traj[0].unsqueeze(0)  # shape: [1,2]
-
-predicted_traj = predict_trajectory_full(initial_condition, steps=100, model=model)
-
-time_steps = range(101)
-# Font size adjustments for readability
-title_fontsize = 14
-label_fontsize = 12
-legend_fontsize = 10
-
-# Plot for Variable 1
-plt.figure(figsize=(10, 5))
-plt.plot(time_steps, actual_traj[:, 0].cpu().numpy(), 'o-', label='True x1')
-plt.plot(time_steps, predicted_traj[:, 0].detach().cpu().numpy(), 'x--', label='Predicted x1')
-plt.xlabel("Time step")
-plt.ylabel("x1")
-plt.title("Comparison: True vs. Predicted Trajectory (x1)")
-plt.legend()
-plt.show()
-
-# Plot for Variable 2
-plt.figure(figsize=(10, 5))
-plt.plot(time_steps, actual_traj[:, 1].cpu().numpy(), 'o-', label='True x 2')
-plt.plot(time_steps, predicted_traj[:, 1].detach().cpu().numpy(), 'x--', label='Predicted x2')
-plt.xlabel("Time step")
-plt.ylabel("x2")
-plt.title("Comparison: True vs. Predicted Trajectory (x2)")
-plt.legend()
-plt.show()
+for i in range(5):
+    # Example usage:
+    sample_index = r.randint(0, 4999) # choose the sample index
+    actual_traj = test_tensor[sample_index]  # shape: [101, 2]
+    initial_condition = actual_traj[0].unsqueeze(0)  # shape: [1,2]
+    
+    predicted_traj = predict_trajectory_full(initial_condition, steps=100, model=model)
+    
+    time_steps = range(101)
+    # Font size adjustments for readability
+    title_fontsize = 14
+    label_fontsize = 12
+    legend_fontsize = 10
+    
+    # Plot for Variable 1
+    plt.figure(figsize=(10, 5))
+    plt.plot(time_steps, actual_traj[:, 0].cpu().numpy(), 'o-', label='True x1')
+    plt.plot(time_steps, predicted_traj[:, 0].detach().cpu().numpy(), 'x--', label='Predicted x1')
+    plt.xlabel("Time step")
+    plt.ylabel("x1")
+    plt.title("Comparison: True vs. Predicted Trajectory (x1)")
+    plt.legend()
+    plt.show()
+    
+    # Plot for Variable 2
+    plt.figure(figsize=(10, 5))
+    plt.plot(time_steps, actual_traj[:, 1].cpu().numpy(), 'o-', label='True x 2')
+    plt.plot(time_steps, predicted_traj[:, 1].detach().cpu().numpy(), 'x--', label='Predicted x2')
+    plt.xlabel("Time step")
+    plt.ylabel("x2")
+    plt.title("Comparison: True vs. Predicted Trajectory (x2)")
+    plt.legend()
+    plt.show()
