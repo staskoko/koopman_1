@@ -212,7 +212,7 @@ print(f"The best model has a loss of {Lowest_loss} and is model nr. {Lowest_loss
 
 # Load the parameters of the best model (automatically on GPU if loaded into a model on GPU)
 model.load_state_dict(torch.load(Model_path[Lowest_loss_index]))
-running_loss_df = pd.DataFrame(Running_Losses_Array).transpose()ž
+running_loss_df = pd.DataFrame(Running_Losses_Array).transpose()
 
 def predict_trajectory_full(initial_condition, steps, model):
 
