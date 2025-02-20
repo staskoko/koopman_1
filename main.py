@@ -215,7 +215,8 @@ model.load_state_dict(torch.load(Model_path[Lowest_loss_index]))
 running_loss_df = pd.DataFrame(Running_Losses_Array).transpose()
 
 def predict_trajectory_full(initial_condition, steps, model):
-
+    # Ensure the initial condition is on the same device as the model
+    initial_condition = initial_condition.to(next(model.parameters()).device)
     predictions = [initial_condition]  # list to store each predicted state
     current_state = initial_condition
 
@@ -226,6 +227,7 @@ def predict_trajectory_full(initial_condition, steps, model):
 
     trajectory = torch.cat(predictions, dim=0)
     return trajectory
+
 
 # Example usage:
 sample_index = r.randint(0, 4999) # choose the sample index
