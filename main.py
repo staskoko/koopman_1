@@ -112,17 +112,19 @@ def total_loss(alpha, W, xk, S_p, T, K, phi, phi_inv):
 
 Num_meas = 2
 Num_Obsv = 3
-Num_Neurons = 128
+Num_Neurons = 30
 
 class AUTOENCODER(nn.Module):
     def __init__(self, Num_meas, Num_Obsv, Num_Neurons):
         super(AUTOENCODER, self).__init__()
         self.Encoder_In = nn.Linear(Num_meas, Num_Neurons)
         self.Encoder_Hdd = nn.Linear(Num_Neurons, Num_Neurons)
+        self.Encoder_Hdd2 = nn.Linear(Num_Neurons, Num_Neurons)
         self.Encoder_out = nn.Linear(Num_Neurons, Num_Obsv)
         self.Koopman = nn.Linear(Num_Obsv, Num_Obsv, bias=False)
         self.Decoder_In = nn.Linear(Num_Obsv, Num_Neurons)
         self.Decoder_Hdd = nn.Linear(Num_Neurons, Num_Neurons)
+        self.Decoder_Hdd2 = nn.Linear(Num_Neurons, Num_Neurons)
         self.Decoder_out = nn.Linear(Num_Neurons, Num_meas)
         self._init_weights()
 
@@ -136,6 +138,7 @@ class AUTOENCODER(nn.Module):
     def Encoder(self, x):
         x = F.relu(self.Encoder_In(x))
         x = F.relu(self.Encoder_Hdd(x))
+        x = F.relu(self.Encoder_Hdd2(x))
         return F.relu(self.Encoder_out(x))
 
     def Koopman_op(self, x):
@@ -144,6 +147,7 @@ class AUTOENCODER(nn.Module):
     def Decoder(self, x):
         x = F.relu(self.Decoder_In(x))
         x = F.relu(self.Decoder_Hdd(x))
+        x = F.relu(self.Decoder_Hdd2(x))
         return F.relu(self.Decoder_out(x))
 
     def forward(self, x_k):
