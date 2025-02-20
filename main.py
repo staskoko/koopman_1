@@ -16,7 +16,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device:", device)
 
 # Define file path for the CSV file
-file_path = '/data/simulation_results.csv'
+file_path = '/home/trarity/koopman_1/data/simulation_results.csv'
 
 # Load the CSV file into a DataFrame and sort by simulation_id and time
 df = pd.read_csv(file_path)
@@ -173,7 +173,7 @@ Models_loss_list = []
 Running_Losses_Array = []
 
 for i in range(M):
-    Model_path.append(f"/Autoencoder_model_params{i}.pth")
+    Model_path.append(f"/home/trarity/koopman_1/Autoencoder_model_params{i}.pth")
 
 for model_path_i in Model_path:
     # Instantiate a new model and move it to the GPU
