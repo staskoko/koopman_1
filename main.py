@@ -110,6 +110,10 @@ def total_loss(alpha, W, xk, S_p, T, K, phi, phi_inv):
     L_inf = loss_inf(xk, K, phi, phi_inv)
     return alpha_1*(L_recon + L_pred) + L_lin + alpha_2*L_inf
 
+def custom_loss(x_pred, x_target):
+    total_loss = torch.sum(torch.mean((x_pred - x_target) ** 2))
+    return total_loss
+    
 Num_meas = 2
 Num_Obsv = 3
 Num_Neurons = 30
@@ -196,7 +200,9 @@ for model_path_i in Model_path:
           running_loss = 0.0
           for (batch_x,) in train_loader:
               optimizer.zero_grad()
-              loss = total_loss(alpha, W, batch_x, S_p, T, model.Koopman_op, model.Encoder, model.Decoder)
+              #loss = total_loss(alpha, W, batch_x, S_p, T, model.Koopman_op, model.Encoder, model.Decoder)
+              x_pred = model(batch_x)
+              loss = custom_loss(x_pred, x_target)
               
               # Check if loss is NaN; if so, break out of loops
               if torch.isnan(loss):
