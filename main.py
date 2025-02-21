@@ -184,59 +184,62 @@ for i in range(M):
     Model_path.append(f"/home/trarity/koopman_1/Autoencoder_model_params{i}.pth")
 
 for model_path_i in Model_path:
-  training_attempt = 0
-  while True:  # Re-run the training loop until no NaN is encountered
-      training_attempt += 1
-      print(f"\nStarting training attempt #{training_attempt} for model {model_path_i}")
-      
-      # Instantiate the model and optimizer afresh
-      model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons)
-      optimizer = optim.Adam(model.parameters(), lr=lr)
-      loss_list = []
-      running_loss_list = []
-      nan_found = False  # Flag to detect NaNs
-      
-      for e in range(eps):
-          running_loss = 0.0
-          for (batch_x,) in train_loader:
-              optimizer.zero_grad()
-              #loss = total_loss(alpha, W, batch_x, S_p, T, model.Koopman_op, model.Encoder, model.Decoder)
-              x_pred = model(batch_x)
-              loss = custom_loss(x_pred, x_target)
-              
-              # Check if loss is NaN; if so, break out of loops
-              if torch.isnan(loss):
-                  nan_found = True
-                  print(f"NaN detected at epoch {e+1}. Restarting training attempt.")
-                  break
-              
-              loss.backward()
-              optimizer.step()
-              running_loss += loss.item()
-              torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=2.0)
-          
-          if nan_found:
-              break
-          
-          avg_loss = running_loss / len(train_loader)
-          loss_list.append(avg_loss)
-          running_loss_list.append(running_loss)
-          print(f'Epoch {e+1}, Loss: {avg_loss:.10f}, Running loss: {running_loss:.10f}')
-          current_lr = optimizer.param_groups[0]['lr']
-          print(f'Current learning rate: {current_lr:.8f}')
-          
-          # Save the model parameters at the end of each epoch
-          torch.save(model.state_dict(), model_path_i)
-      
-      # If no NaN was found during this training attempt, we exit the loop
-      if not nan_found:
-          break
-      else:
-          print("Restarting training loop due to NaN encountered.\n")
+    training_attempt = 0
+    while True:  # Re-run the training loop until no NaN is encountered
+        training_attempt += 1
+        print(f"\nStarting training attempt #{training_attempt} for model {model_path_i}")
 
-  Models_loss_list.append(running_loss)
-  Running_Losses_Array.append(running_loss_list)
-  torch.save(model.state_dict(), model_path_i) 
+        # Instantiate the model and optimizer afresh
+        model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons)
+        optimizer = optim.Adam(model.parameters(), lr=lr)
+        loss_list = []
+        running_loss_list = []
+        nan_found = False  # Flag to detect NaNs
+
+        for e in range(eps):
+            running_loss = 0.0
+            for (batch_x,) in train_loader:
+                optimizer.zero_grad()
+                #loss = total_loss(alpha, W, batch_x, S_p, T, model.Koopman_op, model.Encoder, model.Decoder)
+
+                x_in = batch_x[:, :-1, :]
+                x_target = batch_x[:, 1:, :]
+                x_pred = model(x_in)
+                loss = custom_loss(x_pred, x_target)
+
+                # Check if loss is NaN; if so, break out of loops
+                if torch.isnan(loss):
+                    nan_found = True
+                    print(f"NaN detected at epoch {e+1}. Restarting training attempt.")
+                    break
+
+                loss.backward()
+                optimizer.step()
+                running_loss += loss.item()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=2.0)
+
+            if nan_found:
+                break
+
+            avg_loss = running_loss / len(train_loader)
+            loss_list.append(avg_loss)
+            running_loss_list.append(running_loss)
+            print(f'Epoch {e+1}, Loss: {avg_loss:.10f}, Running loss: {running_loss:.10f}')
+            current_lr = optimizer.param_groups[0]['lr']
+            print(f'Current learning rate: {current_lr:.8f}')
+
+            # Save the model parameters at the end of each epoch
+            torch.save(model.state_dict(), model_path_i)
+
+        # If no NaN was found during this training attempt, we exit the loop
+        if not nan_found:
+            break
+        else:
+            print("Restarting training loop due to NaN encountered.\n")
+
+    Models_loss_list.append(running_loss)
+    Running_Losses_Array.append(running_loss_list)
+    torch.save(model.state_dict(), model_path_i)
 
 # Find the best of the models
 Lowest_loss = min(Models_loss_list)
