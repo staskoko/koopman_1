@@ -166,7 +166,7 @@ model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons).to(device)
 
 # Training loop variables
 eps = 200        # Number of epochs per batch size
-lr = 1e-3        # Learning rate
+lr = 1e-4        # Learning rate
 batch_size = 256
 S_p = 30
 T = len(train_tensor[0, :, :])
@@ -192,7 +192,7 @@ for model_path_i in Model_path:
         print(f"\nStarting training attempt #{training_attempt} for model {model_path_i}")
 
         # Instantiate the model and optimizer afresh
-        model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons)
+        model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons).to(device)
         optimizer = optim.Adam(model.parameters(), lr=lr)
         loss_list = []
         running_loss_list = []
@@ -201,7 +201,7 @@ for model_path_i in Model_path:
         for e in range(eps):
             running_loss = 0.0
             for (batch_x,) in train_loader:
-                batch_x = batch_x
+                batch_x = batch_x.to(device)
                 optimizer.zero_grad()
                 loss = total_loss(alpha, W, batch_x, S_p, T, model.Koopman_op, model.Encoder, model.Decoder)
 
