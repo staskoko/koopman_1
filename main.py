@@ -79,8 +79,9 @@ def loss_recon(xk, phi, phi_inv):
 
 def loss_pred(xk, S_p, K, phi, phi_inv):
     total_loss = torch.tensor(0.0, device=xk[:, 0, :].device)
-    pred_loop = phi(xk[:, 0, :])
+    
     for m in range(1, S_p + 1):
+        pred_loop = phi(xk[:, 0, :])
         for j in range(m):
             pred_loop = K(pred_loop)
         pred = phi_inv(pred_loop)
@@ -89,8 +90,9 @@ def loss_pred(xk, S_p, K, phi, phi_inv):
 
 def loss_lin(xk, T, K, phi, phi_inv):
     total_loss = torch.tensor(0.0, device=xk[:, 0, :].device)
-    pred_loop = phi(xk[:, 0, :])
+    
     for m in range(1, T - 1):
+        pred_loop = phi(xk[:, 0, :])
         for j in range(m):
             pred_loop = K(pred_loop)
         actual = phi(xk[:, m, :])
@@ -190,7 +192,7 @@ for model_path_i in Model_path:
         print(f"\nStarting training attempt #{training_attempt} for model {model_path_i}")
 
         # Instantiate the model and optimizer afresh
-        model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons)
+        model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons).to(device)
         optimizer = optim.Adam(model.parameters(), lr=lr)
         loss_list = []
         running_loss_list = []
@@ -199,13 +201,14 @@ for model_path_i in Model_path:
         for e in range(eps):
             running_loss = 0.0
             for (batch_x,) in train_loader:
+                batch_x = batch_x.to(device)
                 optimizer.zero_grad()
-                #loss = total_loss(alpha, W, batch_x, S_p, T, model.Koopman_op, model.Encoder, model.Decoder)
+                loss = total_loss(alpha, W, batch_x, S_p, T, model.Koopman_op, model.Encoder, model.Decoder)
 
-                x_in = batch_x[:, :-1, :]
-                x_target = batch_x[:, 1:, :]
-                x_pred = model(x_in)
-                loss = custom_loss(x_pred, x_target)
+                #x_in = batch_x[:, :-1, :]
+                #x_target = batch_x[:, 1:, :]
+                #x_pred = model(x_in)
+                #loss = custom_loss(x_pred, x_target)
 
                 # Check if loss is NaN; if so, break out of loops
                 if torch.isnan(loss):
