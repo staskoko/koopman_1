@@ -166,7 +166,7 @@ model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons).to(device)
 
 # Training loop variables
 eps = 200        # Number of epochs per batch size
-lr = 1e-4        # Learning rate
+lr = 1e-3        # Learning rate
 batch_size = 256
 S_p = 30
 T = len(train_tensor[0, :, :])
