@@ -227,7 +227,7 @@ class AUTOENCODER(nn.Module):
         x = F.relu(self.Encoder_In(x))
         x = F.relu(self.Encoder_Hdd(x))
         x = F.relu(self.Encoder_Hdd2(x))
-        return F.relu(self.Encoder_out(x))
+        return self.Encoder_out(x)
 
     def Koopman_op(self, x):
         return self.Koopman(x)
@@ -236,7 +236,7 @@ class AUTOENCODER(nn.Module):
         x = F.relu(self.Decoder_In(x))
         x = F.relu(self.Decoder_Hdd(x))
         x = F.relu(self.Decoder_Hdd2(x))
-        return F.relu(self.Decoder_out(x))
+        return self.Decoder_out(x)
 
     def forward(self, x_k):
         y_k = self.Encoder(x_k)
