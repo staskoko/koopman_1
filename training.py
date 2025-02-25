@@ -1,76 +1,99 @@
+import torch
+from torch.utils.data import DataLoader, TensorDataset
+import torch.optim as optim
 
+import help_func
+import nn_structure
 
-# Training loop variables
-eps = 200 # Number of epochs per batch size
-lr = 1e-4 # Learning rate
-batch_size = 256
-S_p = 30
-T = len(train_tensor[0, :, :])
-alpha = [0.1, 10e-7, 10e-15]
-W = 0
-NN_structure = 'AUTOENCODER'
+def training(eps, lr, batch_size, S_p, T, alpha, W, NN_strcuture, train_tensor, test_tensor, M):
 
-train_dataset = TensorDataset(train_tensor)
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+  train_dataset = TensorDataset(train_tensor)
+  train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
-M = 1 # Amount of models you want to run
-Model_path = []
-Models_loss_list = []
-Running_Losses_Array = []
+  test_dataset = TensorDataset(test_tensor)
+  test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
-for i in range(M):
-  Model_path.append(f"/content/drive/MyDrive/Colab Notebooks/Autoencoder_model_params{i}.pth")
+  Model_path = []
+  Models_loss_list = []
+  Test_loss_list = []
+  Running_Losses_Array = []
+  c_m = 0
 
-for model_path_i in Model_path:
+  for i in range(M):
+    Model_path.append(f"/content/drive/MyDrive/Colab Notebooks/Autoencoder_model_params{i}.pth")
 
-    # Instantiate the LNN model
-    model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons)
-    loss_list = []
-    running_loss_list = []
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+  for model_path_i in Model_path:
+      training_attempt = 0
+      while True:  # Re-run the training loop until no NaN is encountered
+          training_attempt += 1
+          print(f"\nStarting training attempt #{training_attempt} for model {model_path_i}")
 
-    for e in range(eps):
-        running_loss = 0.0
-        for (batch_x,) in train_loader:
-            optimizer.zero_grad()
+          # Instantiate the model and optimizer afresh
+          model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons)
+          optimizer = optim.Adam(model.parameters(), lr=lr)
+          loss_list = []
+          running_loss_list = []
+          nan_found = False  # Flag to detect NaNs
 
-            loss = total_loss(alpha, W, batch_x, S_p, T, model.Koopman_op, model.Encoder, model.Decoder)
-            loss.backward()
-            optimizer.step()
+          for e in range(eps):
+              running_loss = 0.0
+              for (batch_x,) in train_loader:
+                  optimizer.zero_grad()
+                  loss = total_loss(alpha, W, batch_x, S_p, T, model.Koopman_op, model.Encoder, model.Decoder)
 
-            running_loss += loss.item()
-            # Clip gradients to prevent them from exploding
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=2.0)
+                  # Check if loss is NaN; if so, break out of loops
+                  if torch.isnan(loss):
+                      nan_found = True
+                      print(f"NaN detected at epoch {e+1}. Restarting training attempt.")
+                      break
 
-        # Log the average loss per epoch
-        avg_loss = running_loss / len(train_loader)
-        loss_list.append(avg_loss)
-        running_loss_list.append(running_loss)
-        print(f'Epoch {e + 1}, Loss: {avg_loss:.10f}, Running loss: {running_loss:.10f}')
+                  loss.backward()
+                  optimizer.step()
+                  running_loss += loss.item()
+                  torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=2.0)
 
-        # Log the current learning rate
-        current_lr = optimizer.param_groups[0]['lr']
-        print(f'Current learning rate: {current_lr:.8f}')
+              if nan_found:
+                  break
 
-        # Save the model parameters at the end of each epoch
-        torch.save(model.state_dict(), model_path_i)
+              avg_loss = running_loss / len(train_loader)
+              loss_list.append(avg_loss)
+              running_loss_list.append(running_loss)
+              print(f'Epoch {e+1}, Avg Loss: {avg_loss:.10f}, Running loss: {running_loss:.3e}')
+              current_lr = optimizer.param_groups[0]['lr']
+              print(f'Current learning rate: {current_lr:.8f}')
 
-    Models_loss_list.append(running_loss)
-    Running_Losses_Array.append(running_loss_list)
-    torch.save(model.state_dict(), model_path_i)
+              # Save the model parameters at the end of each epoch
+              torch.save(model.state_dict(), model_path_i)
 
-# Find the best of the models
-Lowest_loss = min(Models_loss_list)
+          # If no NaN was found during this training attempt, we exit the loop
+          if not nan_found:
+              break
+          else:
+              print("Restarting training loop due to NaN encountered.\n")
 
-# Find the index
-Lowest_loss_index = Models_loss_list.index(Lowest_loss)
-print(f"The best model has a loss of {Lowest_loss} and is model nr. {Lowest_loss_index}")
+      Models_loss_list.append(running_loss)
+      Running_Losses_Array.append(running_loss_list)
+      torch.save(model.state_dict(), model_path_i)
 
-# Load the parameters of the best model
-model.load_state_dict(torch.load(Model_path[Lowest_loss_index]))
-#save_drive_best = f"/content/drive/MyDrive/Colab Notebooks/{NN_structure}_{running_loss}_Loss_Params.pth"
-#torch.save(model.state_dict(), save_drive_best)
+      for (batch_x,) in test_loader:
+        [traj_prediction, loss] = self_feeding(model, batch_x)
+        running_loss += loss.item()
 
-# Export running losses to Excel
-running_loss_df = pd.DataFrame(Running_Losses_Array).transpose()
-#running_loss_df.to_excel(f"/content/drive/MyDrive/Colab Notebooks/running_loss_{NN_structure}.xlsx", index=False)
+      avg_loss = running_loss / len(test_loader)
+      print(f'Test Data w/Model {c_m + 1}, Avg Loss: {avg_loss:.10f}, Running loss: {running_loss:.3e}')
+      Test_loss_list.append(running_loss)
+      c_m += 1
+
+  # Find the best of the models
+  Lowest_loss = min(Models_loss_list)
+  Lowest_test_loss = min(Test_loss_list)
+
+  Lowest_loss_index = Models_loss_list.index(Lowest_loss)
+  print(f"The best model has a running loss of {Lowest_loss} and is model nr. {Lowest_loss_index + 1}")
+
+  Lowest_test_loss_index = Test_loss_list.index(Lowest_test_loss)
+  print(f"The best model has a test running loss of {Lowest_test_loss} and is model nr. {Lowest_test_loss_index + 1}")
+  
+  Best_Model = Model_path[Lowest_test_loss_index]
+
+  return Lowest_loss, Lowest_test_loss, Best_Model
