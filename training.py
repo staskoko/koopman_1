@@ -5,7 +5,7 @@ import torch.optim as optim
 import help_func
 import nn_structure
 
-def training(eps, lr, batch_size, S_p, T, alpha, W, Num_meas, Num_Obsv, Num_Neurons, train_tensor, test_tensor, M):
+def trainingfcn(eps, lr, batch_size, S_p, T, alpha, W, Num_meas, Num_Obsv, Num_Neurons, train_tensor, test_tensor, M):
 
   train_dataset = TensorDataset(train_tensor)
   train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
