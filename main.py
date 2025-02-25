@@ -79,40 +79,7 @@ def DiscreteSpectrumExampleFn(x1range, x2range, numICs, tSpan, mu, lam, seed):
         X[j, :, :] = Y[:2, :].T
         
     return X
-
-# Parameters
-numICs = 5000
-x1range = (-0.5, 0.5)
-x2range = x1range
-tSpan = torch.arange(0.0, 1.02, 0.02)  # equivalent to MATLAB: 0:0.02:1
-mu = -0.05
-lam = -1
-
-# Create test, validation, and training tensors with different percentages of numICs
-seed = 1
-test_tensor = DiscreteSpectrumExampleFn(x1range, x2range, round(0.1 * numICs), tSpan, mu, lam, seed)
-print("Test tensor shape:", test_tensor.shape)  # Expected: [0.1*numICs, len(tSpan), 2]
-
-seed = 2
-val_tensor = DiscreteSpectrumExampleFn(x1range, x2range, round(0.2 * numICs), tSpan, mu, lam, seed)
-print("Validation tensor shape:", val_tensor.shape)  # Expected: [0.2*numICs, len(tSpan), 2]
-
-# For training tensor: use 70% of numICs
-train_tensor = DiscreteSpectrumExampleFn(x1range, x2range, round(0.7 * numICs), tSpan, mu, lam, seed)
-print(f"Training tensor shape (seed {seed}):", train_tensor.shape)
-# Define the time step for integration
-h = 0.001
-
-def euler_step(f, x, h):
-    return x + h * f(x)
-
-def train_euler(f, x, h):
-    x_pred_1 = euler_step(f, x, h)
-    x_pred_2 = euler_step(f, x_pred_1, h)
-    x_pos_2 = x_pred_2[:, 0].unsqueeze(1)
-    x_pred = torch.cat((x_pos_2, x_pred_1[:, [1]]), axis=1)
-    return x_pred
-
+    
 def loss_recon(xk, phi, phi_inv):
     pred = phi_inv(phi(xk[:, 0, :]))
     return F.mse_loss(pred, xk[:, 0, :], reduction='mean')
@@ -140,8 +107,13 @@ def loss_lin(xk, T, K, phi, phi_inv):
     return total_loss / (T - 1)
 
 def loss_inf(xk, K, phi, phi_inv):
-    first_term = loss_recon(xk, phi, phi_inv).abs().max()
-    second_term = loss_pred(xk, 1, K, phi, phi_inv).abs().max()
+    x1 = xk[:, 0, :]
+    recon_pred = phi_inv(phi(x1))
+    first_term = (x1 - recon_pred).abs().max(dim=1)[0].mean()
+
+    one_step_latent = K(phi(x1))
+    one_step_pred = phi_inv(one_step_latent)
+    second_term = (xk[:, 1, :] - one_step_pred).abs().max(dim=1)[0].mean()
     return first_term + second_term
 
 def total_loss(alpha, W, xk, S_p, T, K, phi, phi_inv):
@@ -155,7 +127,46 @@ def total_loss(alpha, W, xk, S_p, T, K, phi, phi_inv):
 def custom_loss(x_pred, x_target):
     total_loss = torch.sum(torch.mean((x_pred - x_target) ** 2))
     return total_loss
-    
+
+def predict_trajectory_full(initial_condition, steps, model):
+    initial_condition = initial_condition.to(next(model.parameters()).device)
+    predictions = [initial_condition]
+    current_state = initial_condition
+
+    for _ in range(steps):
+        next_state = model(current_state)
+        predictions.append(next_state)
+        current_state = next_state
+
+    trajectory = torch.cat(predictions, dim=0)
+    return trajectory
+
+
+# Data Generation
+
+numICs = 5000
+x1range = (-0.5, 0.5)
+x2range = x1range
+tSpan = torch.arange(0.0, 1.02, 0.02)  # equivalent to MATLAB: 0:0.02:1
+mu = -0.05
+lam = -1
+
+# Create test, validation, and training tensors with different percentages of numICs
+seed = 1
+test_tensor = DiscreteSpectrumExampleFn(x1range, x2range, round(0.1 * numICs), tSpan, mu, lam, seed)
+print("Test tensor shape:", test_tensor.shape)  # Expected: [0.1*numICs, len(tSpan), 2]
+
+seed = 2
+val_tensor = DiscreteSpectrumExampleFn(x1range, x2range, round(0.2 * numICs), tSpan, mu, lam, seed)
+print("Validation tensor shape:", val_tensor.shape)  # Expected: [0.2*numICs, len(tSpan), 2]
+
+seed = 3
+train_tensor = DiscreteSpectrumExampleFn(x1range, x2range, round(0.7 * numICs), tSpan, mu, lam, seed)
+print(f"Training tensor shape (seed {seed}):", train_tensor.shape)
+
+
+# NN Structure
+
 Num_meas = 2
 Num_Obsv = 3
 Num_Neurons = 30
@@ -163,21 +174,31 @@ Num_Neurons = 30
 class AUTOENCODER(nn.Module):
     def __init__(self, Num_meas, Num_Obsv, Num_Neurons):
         super(AUTOENCODER, self).__init__()
-        self.Encoder_In = nn.Linear(Num_meas, Num_Neurons)
-        self.Encoder_Hdd = nn.Linear(Num_Neurons, Num_Neurons)
-        self.Encoder_Hdd2 = nn.Linear(Num_Neurons, Num_Neurons)
-        self.Encoder_out = nn.Linear(Num_Neurons, Num_Obsv)
+
+        # Neural network layers for the Encoder
+        self.Encoder_In = nn.Linear(Num_meas, Num_Neurons, bias=True)
+        self.Encoder_Hdd = nn.Linear(Num_Neurons, Num_Neurons, bias=True)
+        self.Encoder_Hdd2 = nn.Linear(Num_Neurons, Num_Neurons, bias=True)
+        self.Encoder_out = nn.Linear(Num_Neurons, Num_Obsv, bias=True)
+
+        # Linear condition
         self.Koopman = nn.Linear(Num_Obsv, Num_Obsv, bias=False)
-        self.Decoder_In = nn.Linear(Num_Obsv, Num_Neurons)
-        self.Decoder_Hdd = nn.Linear(Num_Neurons, Num_Neurons)
-        self.Decoder_Hdd2 = nn.Linear(Num_Neurons, Num_Neurons)
-        self.Decoder_out = nn.Linear(Num_Neurons, Num_meas)
+
+        # Neural network layers for the Decoder
+        self.Decoder_In = nn.Linear(Num_Obsv, Num_Neurons, bias=True)
+        self.Decoder_Hdd = nn.Linear(Num_Neurons, Num_Neurons, bias=True)
+        self.Decoder_Hdd2 = nn.Linear(Num_Neurons, Num_Neurons, bias=True)
+        self.Decoder_out = nn.Linear(Num_Neurons, Num_meas, bias=True)
+
+        # Apply custom weight initialization
         self._init_weights()
 
     def _init_weights(self):
         for m in self.modules():
             if isinstance(m, nn.Linear):
-                torch.nn.init.xavier_uniform_(m.weight)
+                # Xavier Uniform initialization for weights
+                torch.nn.init.xavier_uniform_(m.weight)*4
+                # Zero initialization for biases
                 if m.bias is not None:
                     torch.nn.init.zeros_(m.bias)
 
@@ -185,26 +206,33 @@ class AUTOENCODER(nn.Module):
         x = F.relu(self.Encoder_In(x))
         x = F.relu(self.Encoder_Hdd(x))
         x = F.relu(self.Encoder_Hdd2(x))
-        return self.Encoder_out(x)
+        x = self.Encoder_out(x)
+        return x
 
     def Koopman_op(self, x):
-        return self.Koopman(x)
+        x = self.Koopman(x)
+        return x
 
     def Decoder(self, x):
         x = F.relu(self.Decoder_In(x))
         x = F.relu(self.Decoder_Hdd(x))
         x = F.relu(self.Decoder_Hdd2(x))
-        return self.Decoder_out(x)
+        x = self.Decoder_out(x)
+        return x
 
     def forward(self, x_k):
         y_k = self.Encoder(x_k)
         y_k1 = self.Koopman_op(y_k)
-        return self.Decoder(y_k1)
+        x_k1 = self.Decoder(y_k1)
+
+        return x_k1
 
 # Instantiate the model and move it to the GPU (if available)
 model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons).to(device)
 
-# Training loop variables
+
+# Training Loop
+
 eps = 1000        # Number of epochs per batch size
 lr = 1e-3        # Learning rate
 batch_size = 256
@@ -244,11 +272,6 @@ for model_path_i in Model_path:
                 batch_x = batch_x.to(device)
                 optimizer.zero_grad()
                 loss = total_loss(alpha, W, batch_x, S_p, T, model.Koopman_op, model.Encoder, model.Decoder)
-
-                #x_in = batch_x[:, :-1, :]
-                #x_target = batch_x[:, 1:, :]
-                #x_pred = model(x_in)
-                #loss = custom_loss(x_pred, x_target)
 
                 # Check if loss is NaN; if so, break out of loops
                 if torch.isnan(loss):
@@ -293,18 +316,8 @@ print(f"The best model has a loss of {Lowest_loss} and is model nr. {Lowest_loss
 model.load_state_dict(torch.load(Model_path[Lowest_loss_index]))
 running_loss_df = pd.DataFrame(Running_Losses_Array).transpose()
 
-def predict_trajectory_full(initial_condition, steps, model):
-    initial_condition = initial_condition.to(next(model.parameters()).device)
-    predictions = [initial_condition]
-    current_state = initial_condition
 
-    for _ in range(steps):
-        next_state = model(current_state)
-        predictions.append(next_state)
-        current_state = next_state
-
-    trajectory = torch.cat(predictions, dim=0)
-    return trajectory
+# Result Plotting
 
 # Choose three distinct sample indices
 sample_indices = r.sample(range(test_tensor.shape[0]), 3)
