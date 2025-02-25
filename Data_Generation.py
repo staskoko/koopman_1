@@ -3,7 +3,7 @@ import torch.nn.functional as F
 import pandas as pd
 import numpy as np
 
-import help_func
+from help_func import custom_loss, loss_recon, loss_pred, loss_lin, loss_inf, total_loss, self_feeding
 
 def tensor_prep(file_path):
     # Load the CSV file into a DataFrame and sort by simulation_id and time
