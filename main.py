@@ -14,6 +14,7 @@ import random as r
 import help_func
 import nn_structure
 import training
+import Data_Generation
 
 # Set device to GPU if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
