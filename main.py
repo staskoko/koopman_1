@@ -144,7 +144,7 @@ def predict_trajectory_full(initial_condition, steps, model):
 
 # Data Generation
 
-numICs = 5000
+numICs = 7143
 x1range = (-0.5, 0.5)
 x2range = x1range
 tSpan = torch.arange(0.0, 1.02, 0.02)  # equivalent to MATLAB: 0:0.02:1
