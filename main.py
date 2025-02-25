@@ -13,8 +13,8 @@ import random as r
 
 import help_func
 import nn_structure
-import training
-import Data_Generation
+from training import trainingfnc
+from Data_Generation import DataGenerator
 
 # Set device to GPU if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -56,7 +56,7 @@ alpha = [0.1, 10e-7, 10e-15]
 W = 0
 M = 3 # Amount of models you want to run
 
-[Lowest_loss, Lowest_test_loss, Best_Model] = training(eps, lr, batch_size, S_p, T, alpha, W, Num_meas, Num_Obsv, Num_Neurons, train_tensor, test_tensor, M)
+[Lowest_loss, Lowest_test_loss, Best_Model] = trainingfnc(eps, lr, batch_size, S_p, T, alpha, W, Num_meas, Num_Obsv, Num_Neurons, train_tensor, test_tensor, M)
 
 # Load the parameters of the best model
 model.load_state_dict(torch.load(Best_Model))
