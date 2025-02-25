@@ -13,7 +13,7 @@ import random as r
 
 from help_func import custom_loss, loss_recon, loss_pred, loss_lin, loss_inf, total_loss, self_feeding
 from nn_structure import AUTOENCODER
-from training import trainingfnc
+from training import trainingfcn
 from Data_Generation import DataGenerator
 
 # Set device to GPU if available
@@ -56,7 +56,7 @@ alpha = [0.1, 10e-7, 10e-15]
 W = 0
 M = 3 # Amount of models you want to run
 
-[Lowest_loss, Lowest_test_loss, Best_Model] = trainingfnc(eps, lr, batch_size, S_p, T, alpha, W, Num_meas, Num_Obsv, Num_Neurons, train_tensor, test_tensor, M)
+[Lowest_loss, Lowest_test_loss, Best_Model] = trainingfcn(eps, lr, batch_size, S_p, T, alpha, W, Num_meas, Num_Obsv, Num_Neurons, train_tensor, test_tensor, M)
 
 # Load the parameters of the best model
 model.load_state_dict(torch.load(Best_Model))
