@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import random as r
 
 import help_func
-import nn_structure
+from nn_structure import AUTOENCODER
 from training import trainingfnc
 from Data_Generation import DataGenerator
 
