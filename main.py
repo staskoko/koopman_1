@@ -19,6 +19,7 @@ print("Using device:", device)
 
 # Define file path for the CSV file
 file_path = '/home/trarity/koopman_1/data/simulation_results.csv'
+
 def DiscreteSpectrumExampleFn(x1range, x2range, numICs, tSpan, mu, lam, seed):
     """
     Generates trajectories based on a 3D Koopman linear system for a 2D nonlinear dynamical system.
