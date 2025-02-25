@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader, TensorDataset
 import torch.optim as optim
 
 from help_func import custom_loss, loss_recon, loss_pred, loss_lin, loss_inf, total_loss, self_feeding
-import nn_structure
+from nn_structure import AUTOENCODER
 
 def trainingfcn(eps, lr, batch_size, S_p, T, alpha, W, Num_meas, Num_Obsv, Num_Neurons, train_tensor, test_tensor, M):
 
