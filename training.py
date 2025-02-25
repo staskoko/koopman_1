@@ -20,7 +20,7 @@ def trainingfcn(eps, lr, batch_size, S_p, T, alpha, W, Num_meas, Num_Obsv, Num_N
   c_m = 0
 
   for i in range(M):
-    Model_path.append(f"/home/trarity/koopman_1/data/Autoencoder_model_params{i}.pth")
+    Model_path.append(f"/home/Autoencoder_model_params{i}.pth")#(f"/home/trarity/koopman_1/data/Autoencoder_model_params{i}.pth")
 
   for model_path_i in Model_path:
       training_attempt = 0
