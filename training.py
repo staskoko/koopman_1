@@ -20,7 +20,7 @@ def training(eps, lr, batch_size, S_p, T, alpha, W, Num_meas, Num_Obsv, Num_Neur
   c_m = 0
 
   for i in range(M):
-    Model_path.append(f"/content/drive/MyDrive/Colab Notebooks/Autoencoder_model_params{i}.pth")
+    Model_path.append(f"/home/trarity/koopman_1/Autoencoder_model_params{i}.pth")
 
   for model_path_i in Model_path:
       training_attempt = 0
