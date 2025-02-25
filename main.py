@@ -32,6 +32,8 @@ tSpan = torch.arange(0.0, 1.02, 0.02)  # equivalent to MATLAB: 0:0.02:1
 mu = -0.05
 lam = -1
 
+[train_tensor, test_tensor, val_tensor] = DataGenerator(x1range, x2range, numICs, tSpan, mu, lam)
+
 # NN Structure
 
 Num_meas = 2
