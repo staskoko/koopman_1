@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 import torch.optim as optim
+import os
 
 from help_func import custom_loss, loss_recon, loss_pred, loss_lin, loss_inf, total_loss, self_feeding
 from nn_structure import AUTOENCODER
@@ -20,9 +21,13 @@ def trainingfcn(eps, lr, batch_size, S_p, T, alpha, W, Num_meas, Num_Obsv, Num_N
   c_m = 0
 
   for i in range(M):
-    Model_path.append(f"/home/trarity/koopman_1/data/Autoencoder_model_params{i}.pth")
-    #Model_path.append(f"C:/Users/jokin/Desktop/Uni/Aalborg/Master/Masters_Thesis/Path/Autoencoder_model_params{i}.pth")
-
+    path1 = f"/home/trarity/koopman_1/data/Autoencoder_model_params{i}.pth"
+    path2 = f"C:/Users/jokin/Desktop/Uni/Aalborg/Master/Masters_Thesis/Path/Autoencoder_model_params{i}.pth"
+    if os.path.exists(path1):
+        Model_path.append(path1)
+    else:
+        Model_path.append(path2)
+      
   for model_path_i in Model_path:
       training_attempt = 0
       while True:  # Re-run the training loop until no NaN is encountered
