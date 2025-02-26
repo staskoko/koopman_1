@@ -30,7 +30,7 @@ def trainingfcn(eps, lr, batch_size, S_p, T, alpha, W, Num_meas, Num_Obsv, Num_N
           print(f"\nStarting training attempt #{training_attempt} for model {model_path_i}")
 
           # Instantiate the model and optimizer afresh
-          model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons)
+          model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons, Num_hidden_encoder, Num_hidden_decoder)
           optimizer = optim.Adam(model.parameters(), lr=lr)
           loss_list = []
           running_loss_list = []
