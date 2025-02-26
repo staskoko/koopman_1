@@ -40,9 +40,11 @@ gen_type = 0
 Num_meas = 2
 Num_Obsv = 3
 Num_Neurons = 30
+Num_hidden_encoder = 2 
+Num_hidden_decoder = 2
 
 # Instantiate the model and move it to the GPU (if available)
-model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons)#.to(device)
+model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons, Num_hidden_encoder, Num_hidden_decoder)#.to(device)
 
 
 # Training Loop
