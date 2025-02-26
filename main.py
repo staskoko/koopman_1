@@ -39,9 +39,9 @@ gen_type = 0
 
 Num_meas = 2
 Num_Obsv = 3
-Num_Neurons = 30
-Num_hidden_encoder = 2 
-Num_hidden_decoder = 2
+Num_Neurons = 64
+Num_hidden_encoder = 3 
+Num_hidden_decoder = 3
 
 # Instantiate the model and move it to the GPU (if available)
 model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons, Num_hidden_encoder, Num_hidden_decoder)#.to(device)
@@ -49,7 +49,7 @@ model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons, Num_hidden_encoder, Num_hid
 
 # Training Loop
 
-eps = 2000        # Number of epochs per batch size
+eps = 1000        # Number of epochs per batch size
 lr = 1e-3        # Learning rate
 batch_size = 256
 S_p = 30
