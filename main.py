@@ -42,7 +42,7 @@ print(f"Validation tensor shape: {val_tensor.shape}")
 # NN Structure
 
 Num_meas = 2
-Num_Obsv = 3
+Num_Obsv = 4
 Num_Neurons = 64
 Num_hidden_encoder = 3 
 Num_hidden_decoder = 3
@@ -53,7 +53,7 @@ model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons, Num_hidden_encoder, Num_hid
 
 # Training Loop
 
-eps = 2        # Number of epochs per batch size
+eps = 1000        # Number of epochs per batch size
 lr = 1e-3        # Learning rate
 batch_size = 256
 S_p = 30
