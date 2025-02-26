@@ -35,6 +35,10 @@ gen_type = 0
 
 [train_tensor, test_tensor, val_tensor] = DataGenerator(x1range, x2range, numICs, tSpan, mu, lam, file_path, gen_type)
 
+print(f"Train tensor shape: {train_tensor.shape}")
+print(f"Validation tensor shape: {val_tensor.shape}")
+print(f"Test tensor shape: {test_tensor.shape}")
+
 # NN Structure
 
 Num_meas = 2
