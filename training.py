@@ -83,7 +83,7 @@ def trainingfcn(eps, lr, batch_size, S_p, T, alpha, W, Num_meas, Num_Obsv, Num_N
       torch.save(model.state_dict(), model_path_i)
 
       for (batch_x,) in test_loader:
-        [traj_prediction, loss] = self_feeding(model, batch_x)
+        [traj_prediction, loss] = self_feeding(batch_x, model.Koopman_op, model.Encoder, model.Decoder)
         running_loss += loss.item()
 
       avg_loss = running_loss / len(test_loader)
