@@ -1,17 +1,14 @@
+import torch
+import torch.nn.functional as F
+
 def custom_loss(x_pred, x_target):
     total_loss = torch.sum(torch.mean((x_pred - x_target) ** 2))
     return total_loss
-
-
-
-
 
 def loss_recon(xk, phi, phi_inv): # inputs (xk,encoder,decoder)
     pred = phi_inv(phi(xk[:, 0, :]))
     recon_loss = F.mse_loss(pred, xk[:, 0, :], reduction='mean')
     return recon_loss
-
-
 
 def loss_pred(xk, S_p, K, phi, phi_inv): # inputs (xk, Sp = 30, Koopman, encoder, decoder)
 
@@ -26,10 +23,6 @@ def loss_pred(xk, S_p, K, phi, phi_inv): # inputs (xk, Sp = 30, Koopman, encoder
     #print(f"Predicted loss: {pred_loss}")
 
     return pred_loss
-
-
-
-
 
 def loss_lin(xk, T, K, phi, phi_inv):# inputs (xk, Koopman, encoder, decoder)
     #T = len(xk[0, :, :])
