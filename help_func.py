@@ -1,6 +1,8 @@
 import torch
 import torch.nn.functional as F
 
+from loss_func import custom_loss
+
 def self_feeding(xk, K, phi, phi_inv):
     num_steps = int(len(xk[0, :, 0]))
     predictions = []
