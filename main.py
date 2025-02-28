@@ -74,7 +74,7 @@ print(f"Loaded model parameters from Model: {Best_Model}")
 
 # Choose three distinct sample indices
 sample_indices = r.sample(range(val_tensor.shape[0]), 3)
-[Val_pred_traj, val_loss] = self_feeding(model, val_tensor)
+[Val_pred_traj, val_loss] = self_feeding(val_tensor, model.Koopman_op, model.Encoder, model.Decoder)
 
 print(f"Running loss for validation: {val_loss:.3e}")
 
@@ -108,7 +108,7 @@ plt.show()
 
 # Choose three distinct sample indices
 sample_indices = r.sample(range(train_tensor.shape[0]), 3)
-[train_pred_traj, train_loss] = self_feeding(model, train_tensor)
+[train_pred_traj, train_loss] = self_feeding(train_tensor, model.Koopman_op, model.Encoder, model.Decoder)
 
 print(f"Running loss for training: {train_loss:.3e}")
 
