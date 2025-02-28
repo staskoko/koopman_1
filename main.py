@@ -53,14 +53,14 @@ model = AUTOENCODER(Num_meas, Num_Obsv, Num_Neurons, Num_hidden_encoder, Num_hid
 
 # Training Loop
 
-eps = 1000        # Number of epochs per batch size
+eps = 100        # Number of epochs per batch size
 lr = 1e-3        # Learning rate
 batch_size = 256
 S_p = 30
 T = len(train_tensor[0, :, :])
 alpha = [0.1, 10e-7, 10e-15]
 W = 0
-M = 3 # Amount of models you want to run
+M = 1 # Amount of models you want to run
 
 [Lowest_loss, Lowest_test_loss, Best_Model] = trainingfcn(eps, lr, batch_size, S_p, T, alpha, W, Num_meas, Num_Obsv, Num_Neurons, Num_hidden_encoder, Num_hidden_decoder, train_tensor, test_tensor, M)
 
