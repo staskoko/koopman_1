@@ -56,5 +56,7 @@ def total_loss(alpha, W, xk, S_p, T, K, phi, phi_inv): # inputs (alpha, W, xk, S
 
     L_total = alpha_1*(L_recon + L_pred) + L_lin + alpha_2*L_inf # + alpha_3*W_norm_sqr
 
-    return L_total, L_recon, L_pred, L_lin, L_inf
+    return L_total
+
+
 
