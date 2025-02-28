@@ -11,7 +11,8 @@ from torch.utils.data import DataLoader, TensorDataset
 import matplotlib.pyplot as plt
 import random as r
 
-from help_func import custom_loss, loss_recon, loss_pred, loss_lin, loss_inf, total_loss, self_feeding
+from help_func import self_feeding
+from loss_func import custom_loss, loss_recon, loss_pred, loss_lin, loss_inf, total_loss
 from nn_structure import AUTOENCODER
 from training import trainingfcn
 from Data_Generation import DataGenerator
